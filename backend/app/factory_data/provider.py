@@ -1,5 +1,5 @@
 """
-SENTINEL 2.0 Factory Data Provider Abstraction & Simulator (Phase E)
+Factory data provider services and data access utilities.
 """
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional
