@@ -41,6 +41,7 @@ def test_list_incidents_and_detail_endpoint():
     assert len(detail["audit_events"]) > 0
 
 
+
 def test_supervisor_websocket_realtime_stream():
     ACTIVE_SITUATIONS.clear()
     session_id = "test_ws_sess_01"
@@ -52,7 +53,13 @@ def test_supervisor_websocket_realtime_stream():
         assert isinstance(initial["incidents"], list)
 
         # Trigger situation update
-        process_situation_update(session_id, SituationUpdate(equipment="Machine 2", abnormal_vibration=True))
+        client.post(
+            f"/api/situation/{session_id}",
+            json={
+                "equipment": "Machine 2",
+                "abnormal_vibration": True
+            }
+        )
 
         # Check websocket broadcast message
         data = websocket.receive_json()
@@ -60,3 +67,4 @@ def test_supervisor_websocket_realtime_stream():
         assert data["incident"]["session_id"] == session_id
         assert data["incident"]["severity"] == "MEDIUM"
         assert data["incident"]["situation"]["equipment"] == "Machine 2"
+
