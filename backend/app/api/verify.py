@@ -23,6 +23,11 @@ async def verify_worker_safety(
 ) -> Dict:
     """
     Backend-authoritative worker safety verification.
+    
+    SECURITY LIMITATION (Phase F):
+    Currently, there is no identity verification mechanism. We trust any requester
+    with a valid `session_id`. In a future phase, a JWT or OAuth2 identity token
+    must be required to cryptographically verify that the caller is the affected worker.
 
     The AssemblyAI agent calls the verify_worker_safety tool with { safe: bool }.
     The backend decides the consequences — the LLM can never escalate on its own:
