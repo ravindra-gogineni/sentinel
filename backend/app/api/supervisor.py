@@ -21,13 +21,13 @@ def build_full_incident_detail(session_id: str) -> Optional[Dict[str, Any]]:
         return None
 
     situation = ACTIVE_SITUATIONS.get(session_id)
-    situation_data = situation.model_dump() if situation else {"session_id": session_id}
+    situation_data = situation.model_dump(mode="json") if situation else {"session_id": session_id}
     
     # Calculate risk from situation model if available
     risk_data = {"severity": snapshot.get("severity", "LOW"), "reasons": [], "immediate_actions": []}
     if situation:
         risk_assessment = calculate_severity(situation)
-        risk_data = risk_assessment.model_dump()
+        risk_data = risk_assessment.model_dump(mode="json")
 
     audit_events = svc.list_audit_events(session_id)
 
