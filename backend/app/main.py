@@ -51,6 +51,47 @@ app.include_router(knowledge_router)
 app.include_router(factory_router)
 
 
+# ── Global Exception Handlers (Phase F) ───────────────────────────────────────
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from fastapi import Request
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    """
+    Returns a structured 422 JSON response so the AssemblyAI tool
+    fails cleanly rather than receiving an unhandled web framework error format.
+    """
+    errors = exc.errors()
+    # Safely format errors without leaking too much internal logic
+    error_msgs = [f"{err['loc'][-1]}: {err['msg']}" for err in errors if 'loc' in err and 'msg' in err]
+    return JSONResponse(
+        status_code=422,
+        content={
+            "status": "error",
+            "error": "invalid_payload",
+            "message": "Payload validation failed",
+            "details": error_msgs
+        },
+    )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """
+    Catches unhandled 500s. Logs the traceback securely and returns a
+    generic error message to the client, preventing stack trace leakage.
+    """
+    logger.exception(f"Unhandled server error on {request.method} {request.url.path}")
+    return JSONResponse(
+        status_code=500,
+        content={
+            "status": "error",
+            "error": "internal_server_error",
+            "message": "An unexpected error occurred"
+        },
+    )
+
+
 # ── Health ────────────────────────────────────────────────────────────────────
 @app.get("/health")
 async def health() -> dict:
